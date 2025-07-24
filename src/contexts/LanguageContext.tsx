@@ -8,7 +8,7 @@ interface LanguageContextType {
   t: (key: string) => string;
 }
 
-const translations = {
+const translations: Record<Language, Record<string, string>> = {
   en: {
     // Navigation
     'nav.home': 'Home',
@@ -73,10 +73,6 @@ const translations = {
     
     // Admin
     'admin.title': 'Admin Dashboard',
-    'admin.login': 'Admin Login',
-    'admin.username': 'Username',
-    'admin.password': 'Password',
-    'admin.signin': 'Sign In',
     'admin.total.scans': 'Total Scans',
     'admin.diseases.detected': 'Diseases Detected',
     'admin.users.active': 'Active Users',
@@ -169,6 +165,19 @@ const translations = {
     'about.contact.message': 'संदेश',
     'about.contact.send': 'संदेश भेजें',
     
+    // Admin
+    'admin.title': 'Admin Dashboard',
+    'admin.total.scans': 'Total Scans',
+    'admin.diseases.detected': 'Diseases Detected',
+    'admin.users.active': 'Active Users',
+    'admin.accuracy': 'Detection Accuracy',
+    'admin.recent.cases': 'Recent Cases',
+    'admin.export': 'Export Data',
+    'admin.crop': 'Crop',
+    'admin.disease': 'Disease',
+    'admin.date': 'Date',
+    'admin.language': 'Language',
+    
     // Crops
     'crops.tomato': 'टमाटर',
     'crops.potato': 'आलू',
@@ -190,12 +199,78 @@ const translations = {
     'hero.title': 'AI உடன் உடனடியாக பயிர் நோயைக் கண்டறியுங்கள்',
     'hero.subtitle': 'உங்கள் ஃபோன் கேமராவைப் பயன்படுத்தி உடனடி நோய் கண்டறிதலுடன் உங்கள் பயிர்களை ஆரோக்கியமாக வைத்திருக்க உதவுங்கள்',
     'hero.cta': 'தொடங்குங்கள்',
+    'features.title': 'Why Choose AgroGuardian?',
+    'features.offline': 'Works Offline',
+    'features.offline.desc': 'No internet? No problem. Works without connection.',
+    'features.multilingual': 'Multiple Languages',
+    'features.multilingual.desc': 'Available in Hindi, Tamil, Bengali and English.',
+    'features.instant': 'Instant Results',
+    'features.instant.desc': 'Get disease detection and remedies in seconds.',
     
     // Upload Page  
     'upload.title': 'பயிர் படத்தைப் பதிவேற்றவும்',
+    'upload.subtitle': 'Take a photo or upload an image of your crop for AI analysis',
     'upload.crop.label': 'பயிர் வகையைத் தேர்ந்தெடுக்கவும்',
     'upload.crop.placeholder': 'உங்கள் பயிரைத் தேர்ந்தெடுக்கவும்...',
+    'upload.drop.text': 'Drop image here or click to upload',
+    'upload.drop.formats': 'Supports: JPG, PNG (Max 5MB)',
+    'upload.camera': 'Take Photo',
+    'upload.gallery': 'Choose from Gallery',
     'upload.detect': 'நோயைக் கண்டறியுங்கள்',
+    'upload.processing': 'Analyzing image...',
+    
+    // Results
+    'result.title': 'Detection Results',
+    'result.crop': 'Crop',
+    'result.disease': 'Detected Issue',
+    'result.confidence': 'Confidence',
+    'result.remedy.title': 'Recommended Treatment',
+    'result.remedy.steps': 'Treatment Steps',
+    'result.preventive': 'Preventive Measures',
+    'result.share': 'Share Report',
+    'result.share.whatsapp': 'Share on WhatsApp',
+    'result.download': 'Download Report',
+    'result.scan.again': 'Scan Another Crop',
+    'chat.ask.assistant': 'Ask AI Assistant',
+    'chat.placeholder': 'Type your farming question...',
+    'chat.voice.start': 'Start voice input',
+    'chat.voice.stop': 'Stop voice input',
+    'chat.speak': 'Read aloud',
+    'chat.stop.speaking': 'Stop reading',
+    
+    // About
+    'about.title': 'AgroGuardian பற்றி',
+    'about.mission': 'Our Mission',
+    'about.mission.text': 'Empowering farmers with AI-powered crop disease detection to improve agricultural productivity and food security.',
+    'about.team': 'Our Team',
+    'about.contact': 'Contact Us',
+    'about.contact.form': 'Send us a message',
+    'about.contact.name': 'Name',
+    'about.contact.email': 'Email',
+    'about.contact.message': 'Message',
+    'about.contact.send': 'Send Message',
+    
+    // Admin
+    'admin.title': 'Admin Dashboard',
+    'admin.total.scans': 'Total Scans',
+    'admin.diseases.detected': 'Diseases Detected',
+    'admin.users.active': 'Active Users',
+    'admin.accuracy': 'Detection Accuracy',
+    'admin.recent.cases': 'Recent Cases',
+    'admin.export': 'Export Data',
+    'admin.crop': 'Crop',
+    'admin.disease': 'Disease',
+    'admin.date': 'Date',
+    'admin.language': 'Language',
+    
+    // Common
+    'common.loading': 'Loading...',
+    'common.error': 'Something went wrong',
+    'common.retry': 'Try Again',
+    'common.success': 'Success!',
+    'common.cancel': 'Cancel',
+    'common.save': 'Save',
+    'common.close': 'Close',
     
     // Crops
     'crops.tomato': 'தக்காளி',
@@ -218,12 +293,78 @@ const translations = {
     'hero.title': 'AI দিয়ে তাৎক্ষণিক ফসলের রোগ নির্ণয় করুন',
     'hero.subtitle': 'আপনার ফোন ক্যামেরা ব্যবহার করে তাৎক্ষণিক রোগ নির্ণয়ের মাধ্যমে আপনার ফসল সুস্থ রাখতে সাহায্য করুন',
     'hero.cta': 'শুরু করুন',
+    'features.title': 'Why Choose AgroGuardian?',
+    'features.offline': 'Works Offline',
+    'features.offline.desc': 'No internet? No problem. Works without connection.',
+    'features.multilingual': 'Multiple Languages',
+    'features.multilingual.desc': 'Available in Hindi, Tamil, Bengali and English.',
+    'features.instant': 'Instant Results',
+    'features.instant.desc': 'Get disease detection and remedies in seconds.',
     
     // Upload Page
     'upload.title': 'ফসলের ছবি আপলোড করুন',
+    'upload.subtitle': 'Take a photo or upload an image of your crop for AI analysis',
     'upload.crop.label': 'ফসলের ধরন নির্বাচন করুন',
     'upload.crop.placeholder': 'আপনার ফসল বেছে নিন...',
+    'upload.drop.text': 'Drop image here or click to upload',
+    'upload.drop.formats': 'Supports: JPG, PNG (Max 5MB)',
+    'upload.camera': 'Take Photo',
+    'upload.gallery': 'Choose from Gallery',
     'upload.detect': 'রোগ নির্ণয় করুন',
+    'upload.processing': 'Analyzing image...',
+    
+    // Results
+    'result.title': 'Detection Results',
+    'result.crop': 'Crop',
+    'result.disease': 'Detected Issue',
+    'result.confidence': 'Confidence',
+    'result.remedy.title': 'Recommended Treatment',
+    'result.remedy.steps': 'Treatment Steps',
+    'result.preventive': 'Preventive Measures',
+    'result.share': 'Share Report',
+    'result.share.whatsapp': 'Share on WhatsApp',
+    'result.download': 'Download Report',
+    'result.scan.again': 'Scan Another Crop',
+    'chat.ask.assistant': 'Ask AI Assistant',
+    'chat.placeholder': 'Type your farming question...',
+    'chat.voice.start': 'Start voice input',
+    'chat.voice.stop': 'Stop voice input',
+    'chat.speak': 'Read aloud',
+    'chat.stop.speaking': 'Stop reading',
+    
+    // About
+    'about.title': 'AgroGuardian সম্পর্কে',
+    'about.mission': 'Our Mission',
+    'about.mission.text': 'Empowering farmers with AI-powered crop disease detection to improve agricultural productivity and food security.',
+    'about.team': 'Our Team',
+    'about.contact': 'Contact Us',
+    'about.contact.form': 'Send us a message',
+    'about.contact.name': 'Name',
+    'about.contact.email': 'Email',
+    'about.contact.message': 'Message',
+    'about.contact.send': 'Send Message',
+    
+    // Admin
+    'admin.title': 'Admin Dashboard',
+    'admin.total.scans': 'Total Scans',
+    'admin.diseases.detected': 'Diseases Detected',
+    'admin.users.active': 'Active Users',
+    'admin.accuracy': 'Detection Accuracy',
+    'admin.recent.cases': 'Recent Cases',
+    'admin.export': 'Export Data',
+    'admin.crop': 'Crop',
+    'admin.disease': 'Disease',
+    'admin.date': 'Date',
+    'admin.language': 'Language',
+    
+    // Common
+    'common.loading': 'Loading...',
+    'common.error': 'Something went wrong',
+    'common.retry': 'Try Again',
+    'common.success': 'Success!',
+    'common.cancel': 'Cancel',
+    'common.save': 'Save',
+    'common.close': 'Close',
     
     // Crops
     'crops.tomato': 'টমেটো',
@@ -243,7 +384,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [language, setLanguage] = useState<Language>('en');
 
   const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations['en']] || key;
+    return translations[language][key] || key;
   };
 
   return (

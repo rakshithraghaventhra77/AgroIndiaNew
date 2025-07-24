@@ -58,17 +58,6 @@ const Navbar: React.FC = () => {
               <Info className="w-4 h-4" />
               <span>{t('nav.about')}</span>
             </Link>
-            <Link
-              to="/admin"
-              className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/admin') 
-                  ? 'bg-green-700 text-white' 
-                  : 'text-green-100 hover:bg-green-500 hover:text-white'
-              }`}
-            >
-              <Settings className="w-4 h-4" />
-              <span>{t('nav.admin')}</span>
-            </Link>
             <LanguageSelector />
           </div>
 
@@ -114,17 +103,6 @@ const Navbar: React.FC = () => {
           >
             <Info className="w-5 h-5" />
             <span>{t('nav.about')}</span>
-          </Link>
-          <Link
-            to="/admin"
-            className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/admin') 
-                ? 'bg-green-800 text-white' 
-                : 'text-green-100 hover:bg-green-600'
-            }`}
-          >
-            <Settings className="w-5 h-5" />
-            <span>{t('nav.admin')}</span>
           </Link>
         </div>
       </div>
