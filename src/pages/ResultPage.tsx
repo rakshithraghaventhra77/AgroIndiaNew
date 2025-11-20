@@ -1,5 +1,5 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -10,7 +10,13 @@ import {
   CheckCircle,
   Lightbulb,
   Shield,
-  MessageCircle
+  MessageCircle,
+  Leaf,
+  Bug,
+  Beaker,
+  Sparkles,
+  Eye,
+  TrendingUp
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { DetectionResult } from '../types';
@@ -21,19 +27,35 @@ const ResultPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'organic' | 'chemical'>('organic');
+  const [animatedConfidence, setAnimatedConfidence] = useState(0);
+  const [showScanEffect, setShowScanEffect] = useState(true);
   
   const result = location.state?.result as DetectionResult;
+
+  // Mock data for demonstration
+  const mockResult = {
+    disease: 'Late Blight',
+    confidence: 92,
+    severity: 'Severe',
+    reference: {
+      healthy: 'https://images.unsplash.com/photo-1464522883041-5a5890f09092?auto=format&fit=crop&w=400&q=80',
+      earlyStage: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=400&q=80',
+      moderate: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=400&q=80',
+      severe: 'https://images.unsplash.com/photo-1574263867128-76bf4c36b9a1?auto=format&fit=crop&w=400&q=80',
+    },
+  };
 
   if (!result) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl text-green-600 mb-4">No results found</p>
+          <p className="text-xl text-green-600 mb-4">{t('result.error.noResults')}</p>
           <Link
             to="/upload"
             className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
           >
-            Upload New Image
+            {t('result.error.uploadNew')}
           </Link>
         </div>
       </div>
@@ -42,17 +64,61 @@ const ResultPage: React.FC = () => {
 
   const isHealthy = result.disease === 'Healthy Crop';
   const confidenceColor = result.confidence >= 80 ? 'text-green-600' : result.confidence >= 60 ? 'text-yellow-600' : 'text-red-600';
+  
+  // Determine severity based on confidence and disease type
+  const getSeverity = () => {
+    if (isHealthy) return 'Healthy';
+    if (result.confidence >= 85) return 'Severe';
+    if (result.confidence >= 65) return 'Moderate';
+    return 'Mild';
+  };
+
+  const severity = getSeverity();
+
+  // Animated confidence counter
+  useEffect(() => {
+    if (result) {
+      const timer = setTimeout(() => {
+        const interval = setInterval(() => {
+          setAnimatedConfidence(prev => {
+            if (prev >= result.confidence) {
+              clearInterval(interval);
+              return result.confidence;
+            }
+            return prev + 1;
+          });
+        }, 20);
+        return () => clearInterval(interval);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
+
+  // Hide scan effect after animation
+  useEffect(() => {
+    const timer = setTimeout(() => setShowScanEffect(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'Severe': return 'bg-red-600';
+      case 'Moderate': return 'bg-yellow-500';
+      case 'Mild': return 'bg-orange-500';
+      case 'Healthy': return 'bg-green-600';
+      default: return 'bg-gray-500';
+    }
+  };
 
   const handleShare = () => {
-    const shareText = `AgroGuardian Detection Result:\n\nCrop: ${result.crop}\nIssue: ${result.disease}\nConfidence: ${result.confidence}%\n\nRecommendation: ${result.remedy}`;
+    const shareText = `AgroIndia Detection Result:\n\nCrop: ${result.crop}\nIssue: ${result.disease}\nConfidence: ${result.confidence}%\nSeverity: ${severity}\n\nRecommendation: ${result.remedy}`;
     
     if (navigator.share) {
       navigator.share({
-        title: 'AgroGuardian Detection Result',
+        title: 'AgroIndia Detection Result',
         text: shareText,
       });
     } else {
-      // Fallback to WhatsApp
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
       window.open(whatsappUrl, '_blank');
     }
@@ -60,12 +126,13 @@ const ResultPage: React.FC = () => {
 
   const handleDownload = () => {
     const reportContent = `
-AgroGuardian Detection Report
+AgroIndia Detection Report
 Generated: ${new Date(result.timestamp).toLocaleDateString()}
 
 Crop: ${result.crop}
 Detected Issue: ${result.disease}
 Confidence Level: ${result.confidence}%
+Severity: ${severity}
 
 Treatment Recommendation:
 ${result.remedy}
@@ -74,163 +141,486 @@ Preventive Measures:
 ${result.preventiveMeasures.map((measure, index) => `${index + 1}. ${measure}`).join('\n')}
 
 ---
-Report generated by AgroGuardian AI
+Report generated by AgroIndia AI
     `;
 
     const blob = new Blob([reportContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `agroguardian-report-${Date.now()}.txt`;
+    a.download = `agroindia-report-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
+  const organicSolutions = [
+    "Apply neem oil spray (2-3 times per week)",
+    "Use beneficial insects like ladybugs for natural pest control",
+    "Prepare compost tea and apply to soil",
+    "Implement crop rotation with nitrogen-fixing plants",
+    "Use copper-based organic fungicides"
+  ];
+
+  const chemicalSolutions = [
+    "Apply systemic fungicide (follow label instructions)",
+    "Use targeted insecticide spray",
+    "Apply balanced NPK fertilizer",
+    "Use soil sterilization agents if needed",
+    "Consider growth regulators for severe cases"
+  ];
+
+  const preventionTips = [
+    "Maintain proper spacing between plants for air circulation",
+    "Water at soil level to avoid wetting leaves",
+    "Remove and destroy infected plant debris immediately",
+    "Monitor crops regularly for early detection",
+    "Use disease-resistant varieties when possible",
+    "Ensure proper soil drainage and pH levels"
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Floating Particles */}
+      {[...Array(6)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute opacity-20"
+          initial={{
+            x: Math.random() * window.innerWidth,
+            y: window.innerHeight + 50,
+            rotate: 0,
+            scale: 0.5 + Math.random() * 0.5
+          }}
+          animate={{
+            y: -100,
+            rotate: 360,
+            x: Math.random() * window.innerWidth
+          }}
+          transition={{
+            duration: 8 + Math.random() * 4,
+            repeat: Infinity,
+            delay: i * 0.5,
+            ease: "linear"
+          }}
+        >
+          {i % 3 === 0 ? (
+            <Leaf className="w-8 h-8 text-green-400" />
+          ) : i % 3 === 1 ? (
+            <Sparkles className="w-6 h-6 text-yellow-400" />
+          ) : (
+            <div className="w-4 h-4 bg-green-400 rounded-full" />
+          )}
+        </motion.div>
+      ))}
+
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <motion.div 
+          className="flex items-center justify-between mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <button
             onClick={() => navigate('/upload')}
             className="flex items-center space-x-2 text-green-600 hover:text-green-700 font-medium"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>Back to Upload</span>
+            <span>{t('result.backToUpload')}</span>
           </button>
           
-          <h1 className="text-2xl md:text-3xl font-bold text-green-800">
+          <h1 className="text-3xl md:text-4xl font-bold text-green-800">
             {t('result.title')}
           </h1>
           
-          <div className="w-20"></div> {/* Spacer for centering */}
+          <div className="w-20"></div>
+        </motion.div>
+
+        {/* Main Result Card */}
+        <motion.div 
+          className="bg-white rounded-2xl shadow-xl p-8 mb-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="text-center mb-8">
+            <div className="mb-6">
+              <motion.span
+                className="text-3xl md:text-4xl font-bold text-green-700"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+              >
+                {result.disease}
+              </motion.span>
+              <motion.span
+                className="ml-3 text-xl text-gray-500"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 0.5 }}
+              >
+                – {animatedConfidence}%
+              </motion.span>
+            </div>
+            
+            <motion.div className="mb-6">
+              <motion.span
+                className={`inline-block px-6 py-2 rounded-full text-white text-lg font-semibold ${getSeverityColor(severity)}`}
+                animate={severity === 'Severe' ? {
+                  scale: [1, 1.05, 1],
+                  boxShadow: ["0 0 0 0 rgba(239, 68, 68, 0.7)", "0 0 0 10px rgba(239, 68, 68, 0)", "0 0 0 0 rgba(239, 68, 68, 0)"]
+                } : {}}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                {severity} {severity !== 'Healthy' && 'Severity'}
+              </motion.span>
+            </motion.div>
+
+            {/* Confidence Meter */}
+            <div className="max-w-md mx-auto mb-8">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-600">Confidence Level</span>
+                <span className={`text-sm font-bold ${confidenceColor}`}>{result.confidence}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <motion.div
+                  className={`h-3 rounded-full ${
+                    result.confidence >= 80 ? 'bg-green-500' :
+                    result.confidence >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${result.confidence}%` }}
+                  transition={{ duration: 2, delay: 0.5, ease: "easeOut" }}
+                ></motion.div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Split-screen layout */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          {/* Left: Uploaded Image */}
+          <motion.div 
+            className="bg-white rounded-2xl shadow-xl p-6"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h2 className="text-xl font-semibold text-green-800 mb-4">Your Uploaded Image</h2>
+            {result.imageUrl && (
+              <div className="relative">
+                <img
+                  src={result.imageUrl}
+                  alt="Analyzed crop"
+                  className="w-full h-80 object-cover rounded-lg shadow-md"
+                />
+                <AnimatePresence>
+                  {showScanEffect && (
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-green-400/30 to-transparent rounded-lg"
+                      initial={{ x: "-100%" }}
+                      animate={{ x: "100%" }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        duration: 2,
+                        repeat: 1,
+                        ease: "linear"
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+                <motion.div
+                  className="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-bold"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 2.5, type: "spring", bounce: 0.6 }}
+                >
+                  ✓ Analyzed
+                </motion.div>
+              </div>
+            )}
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                <strong>Crop Type:</strong> {result.crop.charAt(0).toUpperCase() + result.crop.slice(1)}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Analysis Date:</strong> {new Date(result.timestamp).toLocaleDateString()}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Right: Reference Photos */}
+          <motion.div 
+            className="bg-white rounded-2xl shadow-xl p-6"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <h2 className="text-xl font-semibold text-green-800 mb-6">Reference Photos</h2>
+            <div className="space-y-6">
+              {/* 2x2 Grid of Reference Images */}
+              <motion.div
+                className="grid grid-cols-2 gap-4"
+                variants={{
+                  hidden: { opacity: 0 },
+                  show: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.2
+                    }
+                  }
+                }}
+                initial="hidden"
+                animate="show"
+              >
+                {[
+                  { src: mockResult.reference.healthy, alt: "Healthy Crop", color: "green", icon: CheckCircle, label: t('result.reference.healthy') },
+                  { src: mockResult.reference.earlyStage, alt: "Early Stage Disease", color: "yellow", icon: AlertCircle, label: t('result.reference.early') },
+                  { src: mockResult.reference.moderate, alt: "Moderate Disease", color: "orange", icon: AlertCircle, label: t('result.reference.moderate') },
+                  { src: mockResult.reference.severe, alt: "Severe Disease", color: "red", icon: AlertCircle, label: t('result.reference.severe') }
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    className="flex flex-col items-center group cursor-pointer"
+                    variants={{
+                      hidden: { opacity: 0, y: 20, scale: 0.9 },
+                      show: { opacity: 1, y: 0, scale: 1 }
+                    }}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <motion.img
+                      src={item.src}
+                      alt={item.alt}
+                      className={`w-full h-28 object-cover rounded-lg shadow border-2 border-${item.color}-200 mb-2 group-hover:shadow-lg transition-shadow`}
+                      whileHover={{ rotate: [0, -1, 1, 0] }}
+                      transition={{ duration: 0.5 }}
+                    />
+                    <div className="flex items-center space-x-1">
+                      <motion.div
+                        animate={{ rotate: [0, 360] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      >
+                        <item.icon className={`w-4 h-4 text-${item.color}-600`} />
+                      </motion.div>
+                      <span className={`text-${item.color}-700 text-xs font-semibold`}>{item.label}</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* Visual Comparison */}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Eye className="w-5 h-5 text-blue-600" />
+                  <span className="font-semibold text-blue-800">{t('result.reference.guide')}</span>
+                </div>
+                <p className="text-blue-700 text-sm">
+                  {t('result.reference.desc')}
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Image Section */}
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <h2 className="text-xl font-semibold text-green-800 mb-4">Analyzed Image</h2>
-            {result.imageUrl && (
-              <img
-                src={result.imageUrl}
-                alt="Analyzed crop"
-                className="w-full h-64 object-cover rounded-lg shadow-md"
-              />
+        {/* Tabbed Solutions Section */}
+        <motion.div 
+          className="bg-white rounded-2xl shadow-xl p-6 mb-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <h2 className="text-2xl font-bold text-green-800 mb-6">Treatment Solutions</h2>
+          
+          {/* Tab Navigation */}
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6">
+            <button
+              onClick={() => setActiveTab('organic')}
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md font-semibold transition-all ${
+                activeTab === 'organic'
+                  ? 'bg-green-600 text-white shadow-md'
+                  : 'text-green-600 hover:bg-green-50'
+              }`}
+            >
+              <Leaf className="w-5 h-5" />
+              <span>Organic Solutions</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('chemical')}
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md font-semibold transition-all ${
+                activeTab === 'chemical'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              <Beaker className="w-5 h-5" />
+              <span>Chemical Solutions</span>
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          <div className="min-h-[200px]">
+            {activeTab === 'organic' ? (
+              <div className="space-y-4">
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h4 className="font-semibold text-green-800 mb-2">Recommended Organic Treatments:</h4>
+                  <ul className="space-y-2">
+                    {organicSolutions.map((solution, index) => (
+                      <li key={index} className="flex items-start space-x-2">
+                        <span className="bg-green-200 text-green-800 text-sm font-bold px-2 py-1 rounded-full mt-0.5 min-w-[24px] text-center">
+                          {index + 1}
+                        </span>
+                        <span className="text-green-700">{solution}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-800 mb-2">Chemical Treatment Options:</h4>
+                  <ul className="space-y-2">
+                    {chemicalSolutions.map((solution, index) => (
+                      <li key={index} className="flex items-start space-x-2">
+                        <span className="bg-blue-200 text-blue-800 text-sm font-bold px-2 py-1 rounded-full mt-0.5 min-w-[24px] text-center">
+                          {index + 1}
+                        </span>
+                        <span className="text-blue-700">{solution}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                  <p className="text-yellow-800 text-sm">⚠️ Always follow manufacturer instructions and safety guidelines when using chemical treatments.</p>
+                </div>
+              </div>
             )}
           </div>
+        </motion.div>
 
-          {/* Results Section */}
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <div className="space-y-6">
-              {/* Status Indicator */}
-              <div className={`flex items-center space-x-3 p-4 rounded-lg ${
-                isHealthy ? 'bg-green-50 border border-green-200' : 'bg-orange-50 border border-orange-200'
-              }`}>
-                {isHealthy ? (
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                ) : (
-                  <AlertCircle className="w-8 h-8 text-orange-600" />
-                )}
-                <div>
-                  <p className="font-semibold text-lg">
-                    {isHealthy ? 'Healthy Crop Detected!' : 'Issue Detected'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Analysis completed on {new Date(result.timestamp).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-
-              {/* Detection Details */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">{t('result.crop')}</p>
-                  <p className="font-semibold text-green-800 capitalize">{result.crop}</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">{t('result.confidence')}</p>
-                  <p className={`font-semibold ${confidenceColor}`}>{result.confidence}%</p>
-                </div>
-              </div>
-
-              {/* Disease/Issue */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600 mb-2">{t('result.disease')}</p>
-                <p className="font-semibold text-lg text-green-800">{result.disease}</p>
-              </div>
+        {/* Future Prevention Tips */}
+        <motion.div 
+          className="bg-white rounded-2xl shadow-xl p-6 mb-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="bg-purple-100 p-3 rounded-full">
+              <Sparkles className="w-6 h-6 text-purple-600" />
             </div>
+            <h2 className="text-2xl font-bold text-green-800">{t('result.prevention.title')}</h2>
           </div>
-        </div>
-
-        {/* Treatment Recommendation */}
-        <div className="mt-8 bg-white rounded-2xl shadow-xl p-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <Lightbulb className="w-6 h-6 text-yellow-600" />
-            <h2 className="text-xl font-semibold text-green-800">
-              {t('result.remedy.title')}
-            </h2>
+          
+          <div className="grid md:grid-cols-2 gap-4">
+            {preventionTips.map((tip, index) => (
+              <div key={index} className="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <span className="bg-purple-200 text-purple-800 text-sm font-bold px-2 py-1 rounded-full min-w-[24px] text-center">
+                  {index + 1}
+                </span>
+                <span className="text-purple-700">{tip}</span>
+              </div>
+            ))}
           </div>
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <p className="text-green-800 leading-relaxed">{result.remedy}</p>
-          </div>
-        </div>
-
-        {/* Preventive Measures */}
-        {result.preventiveMeasures && result.preventiveMeasures.length > 0 && (
-          <div className="mt-6 bg-white rounded-2xl shadow-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <Shield className="w-6 h-6 text-blue-600" />
-              <h2 className="text-xl font-semibold text-green-800">
-                {t('result.preventive')}
-              </h2>
-            </div>
-            <ul className="space-y-2">
-              {result.preventiveMeasures.map((measure, index) => (
-                <li key={index} className="flex items-start space-x-2">
-                  <span className="bg-green-100 text-green-800 text-sm font-semibold px-2 py-1 rounded-full mt-0.5">
-                    {index + 1}
-                  </span>
-                  <span className="text-green-700">{measure}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        </motion.div>
 
         {/* Action Buttons */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <button
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1 }}
+        >
+          <motion.button
             onClick={handleShare}
-            className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all"
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)",
+              y: -2
+            }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
           >
-            <Share2 className="w-5 h-5" />
-            <span>{t('result.share.whatsapp')}</span>
-          </button>
-          
-          <button
+            <motion.div
+              animate={{ rotate: [0, 15, -15, 0] }}
+              transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+            >
+              <Share2 className="w-5 h-5" />
+            </motion.div>
+            <span>Share Results</span>
+          </motion.button>
+
+          <motion.button
             onClick={handleDownload}
-            className="flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            className="flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-all"
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 10px 25px rgba(34, 197, 94, 0.3)",
+              y: -2
+            }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
           >
-            <Download className="w-5 h-5" />
-            <span>{t('result.download')}</span>
-          </button>
-          
-          <button
+            <motion.div
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: 2 }}
+            >
+              <Download className="w-5 h-5" />
+            </motion.div>
+            <span>Download Report</span>
+          </motion.button>
+
+          <motion.button
             onClick={() => setIsChatOpen(true)}
-            className="flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            className="flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all"
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 10px 25px rgba(147, 51, 234, 0.3)",
+              y: -2
+            }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
           >
-            <MessageCircle className="w-5 h-5" />
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity, delay: 3 }}
+            >
+              <MessageCircle className="w-5 h-5" />
+            </motion.div>
             <span>Ask AI Assistant</span>
-          </button>
-          
-          <Link
-            to="/upload"
-            className="flex items-center justify-center space-x-2 bg-green-100 hover:bg-green-200 text-green-700 font-semibold py-3 px-6 rounded-lg transition-colors border border-green-300"
+          </motion.button>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
           >
-            <Camera className="w-5 h-5" />
-            <span>{t('result.scan.again')}</span>
-          </Link>
-        </div>
+            <Link
+              to="/upload"
+              className="flex items-center justify-center space-x-2 bg-green-100 hover:bg-green-200 text-green-700 font-semibold py-3 px-6 rounded-lg transition-all border border-green-300 group"
+            >
+              <motion.div
+                className="group-hover:rotate-12 transition-transform"
+                animate={{
+                  rotate: [0, 5, -5, 0],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ duration: 3, repeat: Infinity, delay: 4 }}
+              >
+                <Camera className="w-5 h-5" />
+              </motion.div>
+              <span>Scan Another Crop</span>
+            </Link>
+          </motion.div>
+        </motion.div>
 
         {/* Chat Assistant */}
         <ChatAssistant 
